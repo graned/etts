@@ -1,0 +1,5 @@
+[
+  {"transcript": "Hello world", "audio_path": "data/sample1.wav", "language": "en-us"},
+  {"transcript": "How are you?", "audio_path": "data/sample2.wav", "language": "en-us"}
+]
+
