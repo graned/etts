@@ -35,6 +35,19 @@ class PhonemeDictionary:
             json.dump(data, f, ensure_ascii=False, indent=2)
         print(f"💾 Saved phoneme dictionary to {self.vocab_path}")
 
+    def encode_text(self, text: str) -> list[int]:
+        phoneme_seq = phonemize(
+            text,
+            language=self.lang,
+            backend="espeak",
+            strip=True,
+            preserve_punctuation=True,
+        )
+        phoneme_seq = cast(str, phoneme_seq)
+        return [
+            self.phonemes[p]["index"] for p in phoneme_seq.split() if p in self.phonemes
+        ]
+
     def add_from_transcript(self, transcript_path: str):
         # Read transcript text
         with open(transcript_path, "r", encoding="utf-8") as f:
