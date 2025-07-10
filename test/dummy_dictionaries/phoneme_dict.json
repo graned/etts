@@ -1,0 +1,43 @@
+{
+  "phonemes": {
+    "ðɪs": {
+      "index": 1,
+      "symbol": "ðɪs",
+      "reference_mel": []
+    },
+    "ɪz": {
+      "index": 2,
+      "symbol": "ɪz",
+      "reference_mel": []
+    },
+    "dʒʌst": {
+      "index": 3,
+      "symbol": "dʒʌst",
+      "reference_mel": []
+    },
+    "ɐ": {
+      "index": 4,
+      "symbol": "ɐ",
+      "reference_mel": []
+    },
+    "dʌmi": {
+      "index": 5,
+      "symbol": "dʌmi",
+      "reference_mel": []
+    },
+    "tɹænskɹɪpt": {
+      "index": 6,
+      "symbol": "tɹænskɹɪpt",
+      "reference_mel": []
+    },
+    "faɪl": {
+      "index": 7,
+      "symbol": "faɪl",
+      "reference_mel": []
+    }
+  },
+  "metadata": {
+    "language": "en-us",
+    "note": "Phoneme dictionary with numeric indices and reference mel placeholders"
+  }
+}
