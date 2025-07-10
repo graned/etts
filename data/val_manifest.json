@@ -1,5 +1,0 @@
-[
-  {"transcript": "Good morning", "audio_path": "data/val_sample1.wav", "language": "en-us"},
-  {"transcript": "Have a nice day", "audio_path": "data/val_sample2.wav", "language": "en-us"}
-]
-

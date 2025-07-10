@@ -7,6 +7,8 @@ It is designed to support multilingual, multi-speaker voice synthesis — includ
 
 ## Project Structure
 
+NOTE: changed
+
 ```
 etts/
 ├── etts/                    ← Python package
@@ -69,14 +71,14 @@ These pieces are combined in a neural network to generate speech from text input
 
 ## 🛠️ Components
 
-| Module | Description |
-|--------|-------------|
-| `model.py` | PyTorch model that takes phoneme sequences and speaker embeddings, and predicts mel spectrograms |
-| `train.py` | Basic training loop using synthetic or real data |
-| `dataset.py` | Custom Dataset class that loads `.npz` files with phonemes, embeddings, and mel spectrograms |
-| `utils.py` | Helper functions for phonemizing, visualizing, and processing audio |
-| `scripts/` | Tools for preprocessing audio, generating dummy data, and more |
-| `checkpoints/` | Where trained model weights will be saved |
+| Module         | Description                                                                                      |
+| -------------- | ------------------------------------------------------------------------------------------------ |
+| `model.py`     | PyTorch model that takes phoneme sequences and speaker embeddings, and predicts mel spectrograms |
+| `train.py`     | Basic training loop using synthetic or real data                                                 |
+| `dataset.py`   | Custom Dataset class that loads `.npz` files with phonemes, embeddings, and mel spectrograms     |
+| `utils.py`     | Helper functions for phonemizing, visualizing, and processing audio                              |
+| `scripts/`     | Tools for preprocessing audio, generating dummy data, and more                                   |
+| `checkpoints/` | Where trained model weights will be saved                                                        |
 
 ---
 
@@ -127,3 +129,4 @@ Here's a mel spectrogram of the word **"hello"**:
 ```bash
 pip install -r requirements.txt
 
+```

@@ -1,0 +1,7 @@
+[
+  {
+    "transcript": "test/dummy_samples/en_us/sample1/transcript.txt",
+    "audio": "test/dummy_samples/en_us/sample1/audio.mp3",
+    "language": "en_us"
+  }
+]
