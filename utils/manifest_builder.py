@@ -1,7 +1,8 @@
 import os
 import json
+import hashlib
 from glob import glob
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 
 class ManifestBuilder:
@@ -9,13 +10,32 @@ class ManifestBuilder:
         self.root_dir = root_dir
         self.entries: List[Dict[str, str]] = []
 
-    def build(self) -> List[Dict]:
+    def _hash_audio(self, audio_path: str, chunk_size: int = 8192) -> Optional[str]:
+        """
+        Compute SHA256 hash of the audio file to detect duplicates.
+        """
+        try:
+            hasher = hashlib.sha256()
+            with open(audio_path, "rb") as f:
+                while chunk := f.read(chunk_size):
+                    hasher.update(chunk)
+            return hasher.hexdigest()
+        except Exception as e:
+            print(f"❌ Failed hashing audio {audio_path}: {e}")
+            return None
+
+    """
+    Scans the root_dir for samples and builds the manifest.
+    Expected structure: root_dir/lang/sample/{*.wav|*.mp3, *.txt}
+    Args:
+        deduplicate: If True, skip audio files with duplicate hashes.
+    """
+
+    def build(self, deduplicate: bool = True) -> List[Dict]:
         print(f"📂 Building manifest from root directory: {self.root_dir}...")
-        """
-        Scans the root_dir for samples and builds the manifest.
-        Expected structure: root_dir/lang/sample/{*.wav|*.mp3, *.txt}
-        """
+
         self.entries = []
+        seen_hashes = set()
 
         for lang_folder in os.listdir(self.root_dir):
             lang_path = os.path.join(self.root_dir, lang_folder)
@@ -42,13 +62,29 @@ class ManifestBuilder:
                     print(f"⚠️ Missing audio in {sample_path}")
                     continue
 
+                audio_path = audio_file[0]
+
+                if deduplicate:
+                    audio_hash = self._hash_audio(audio_path)
+                    if audio_hash is None:
+                        continue  # skip if hash failed
+                    if audio_hash in seen_hashes:
+                        print(f"⚠️ Duplicate audio detected, skipping {audio_path}")
+                        continue
+                    seen_hashes.add(audio_hash)
+
                 entry = {
                     "transcript": transcription_file[0],
-                    "audio": audio_file[0],
+                    "audio": audio_path,
                     "language": lang_folder,
+                    # TODO: Add metadata fields like duration, sample rate here
+                    # TODO: Validate audio format, sample rate, and channels
+                    # TODO: Support filtering by duration (min/max)
+                    # TODO: Support automatic conversion of mp3 to wav if needed
                 }
 
                 self.entries.append(entry)
+
         print(f"✅ Built manifest with {len(self.entries)} samples")
         return self.entries
 
