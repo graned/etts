@@ -48,6 +48,16 @@ class PhonemeDictionary:
             self.phonemes[p]["index"] for p in phoneme_seq.split() if p in self.phonemes
         ]
 
+    def get_phoneme_seq(self, text: str) -> str:
+        phoneme_seq = phonemize(
+            text,
+            language=self.lang,
+            backend="espeak",
+            strip=True,
+            preserve_punctuation=True,
+        )
+        return cast(str, phoneme_seq)
+
     def add_from_transcript(self, transcript_path: str):
         # Read transcript text
         with open(transcript_path, "r", encoding="utf-8") as f:
