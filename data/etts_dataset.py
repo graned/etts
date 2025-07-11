@@ -1,8 +1,8 @@
 import json
 import torch
 from torch.utils.data import Dataset
-from phoneme_dictionary import PhonemeDictionary
-from embedding_extractor import EmbeddingExtractor
+from utils.phoneme_dictionary import PhonemeDictionary
+from utils.embedding_extractor import EmbeddingExtractor
 from utils.mel_extractor import MelExtractor
 
 

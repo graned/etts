@@ -4,10 +4,10 @@ import sys
 # Add the project root to the Python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from phoneme_dictionary import PhonemeDictionary
-from embedding_extractor import EmbeddingExtractor
+from utils.phoneme_dictionary import PhonemeDictionary
+from utils.embedding_extractor import EmbeddingExtractor
 from utils.mel_extractor import MelExtractor
-from train.etts_dataloader import ETTSDataloader
+from data.etts_dataloader import ETTSDataloader
 
 
 def test_dataloader():

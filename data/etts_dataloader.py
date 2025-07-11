@@ -2,9 +2,9 @@ import torch
 from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import DataLoader
 
-from train.etts_dataset import ETTSDataset
-from phoneme_dictionary import PhonemeDictionary
-from embedding_extractor import EmbeddingExtractor
+from data.etts_dataset import ETTSDataset
+from utils.phoneme_dictionary import PhonemeDictionary
+from utils.embedding_extractor import EmbeddingExtractor
 from utils.mel_extractor import MelExtractor
 
 

@@ -4,7 +4,7 @@ import os
 # Add the project root to the Python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from phoneme_dictionary import PhonemeDictionary
+from utils.phoneme_dictionary import PhonemeDictionary
 
 if __name__ == "__main__":
     # vocab directory
