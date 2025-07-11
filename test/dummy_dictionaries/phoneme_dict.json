@@ -2,38 +2,31 @@
   "phonemes": {
     "ðɪs": {
       "index": 1,
-      "symbol": "ðɪs",
-      "reference_mel": []
+      "symbol": "ðɪs"
     },
     "ɪz": {
       "index": 2,
-      "symbol": "ɪz",
-      "reference_mel": []
+      "symbol": "ɪz"
     },
     "dʒʌst": {
       "index": 3,
-      "symbol": "dʒʌst",
-      "reference_mel": []
+      "symbol": "dʒʌst"
     },
     "ɐ": {
       "index": 4,
-      "symbol": "ɐ",
-      "reference_mel": []
+      "symbol": "ɐ"
     },
     "dʌmi": {
       "index": 5,
-      "symbol": "dʌmi",
-      "reference_mel": []
+      "symbol": "dʌmi"
     },
     "tɹænskɹɪpt": {
       "index": 6,
-      "symbol": "tɹænskɹɪpt",
-      "reference_mel": []
+      "symbol": "tɹænskɹɪpt"
     },
     "faɪl": {
       "index": 7,
-      "symbol": "faɪl",
-      "reference_mel": []
+      "symbol": "faɪl"
     }
   },
   "metadata": {

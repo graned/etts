@@ -54,38 +54,24 @@ class ETTSDataset(Dataset):
 
         # Conver transcript text to phoneme sequence string
         phoneme_seq = self.phoneme_dict.get_phoneme_seq(transcript_text)
-        phoneme_ids = []
-
-        # Get mel spectrogram for the audio
-        mel = self.mel_extractor.extract_mel_spectrogram(audio_path)
-        for ph in phoneme_seq.split():
-            if ph not in self.phoneme_dict.phonemes:
-                print(
-                    f"⚠️  Unexpected: phoneme '{ph}' not in dictionary even after add_from_transcript"
-                )
-                continue
-
-            entry = self.phoneme_dict.phonemes[ph]
-            phoneme_ids.append(entry["index"])
-
-            # Initialize mel spectrogram placeholder if not present
-            if not entry["reference_mel"]:
-                # Crude init: assign the first N frames from mel
-                init_frames = (
-                    mel[:, : self.max_mel_length].cpu().numpy().tolist()
-                )  # Get first 10 frames
-                entry["reference_mel"] = init_frames
-                print(f"🧠 Initialized reference mel for phoneme '{ph}'")
-
+        phoneme_ids = [
+            self.phoneme_dict.phonemes[ph]["index"]
+            for ph in phoneme_seq.split()
+            if ph in self.phoneme_dict.phonemes
+        ]
+        phoneme_ids = phoneme_ids[: self.max_phonemes]  # Truncate if too long
         self.phoneme_dict.save()  # Save updated phoneme dictionary
 
-        phoneme_tensor = torch.tensor(phoneme_ids, dtype=torch.long)
-
-        # Extract speaker embedding from the audio
+        # -- Speaker embedding extraction --
         speaker_embedding = self.embedding_extractor.get_embedding(audio_path)
-        speaker_tensor = torch.tensor(speaker_embedding, dtype=torch.float32)
 
+        # -- Mel spectrogram extraction --
+        mel = self.mel_extractor.extract_mel_spectrogram(audio_path)
         mel = mel[:, : self.max_mel_length]  # Truncate to max time
+
+        # -- Create tensors --
+        phoneme_tensor = torch.tensor(phoneme_ids, dtype=torch.long)
+        speaker_tensor = torch.tensor(speaker_embedding, dtype=torch.float32)
         mel_tensor = torch.nn.functional.pad(
             mel, (0, self.max_mel_length - mel.shape[1]), mode="constant", value=0.0
         )

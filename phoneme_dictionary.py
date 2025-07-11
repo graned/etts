@@ -79,7 +79,6 @@ class PhonemeDictionary:
                 self.phonemes[phoneme] = {
                     "index": self.next_index,
                     "symbol": phoneme,
-                    "reference_mel": [],
                 }
                 print(f"➕ Added new phoneme '{phoneme}' with index {self.next_index}")
                 self.next_index += 1
