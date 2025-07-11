@@ -1,0 +1,40 @@
+{
+  "phonemes": {
+    "ðə": {
+      "index": 1,
+      "symbol": "ðə"
+    },
+    "kwɪk": {
+      "index": 2,
+      "symbol": "kwɪk"
+    },
+    "bɹaʊn": {
+      "index": 3,
+      "symbol": "bɹaʊn"
+    },
+    "fɑːks": {
+      "index": 4,
+      "symbol": "fɑːks"
+    },
+    "dʒʌmps": {
+      "index": 5,
+      "symbol": "dʒʌmps"
+    },
+    "oʊvɚ": {
+      "index": 6,
+      "symbol": "oʊvɚ"
+    },
+    "leɪzi": {
+      "index": 7,
+      "symbol": "leɪzi"
+    },
+    "dɑːɡ.": {
+      "index": 8,
+      "symbol": "dɑːɡ."
+    }
+  },
+  "metadata": {
+    "language": "en-us",
+    "note": "Phoneme dictionary with numeric indices and reference mel placeholders"
+  }
+}

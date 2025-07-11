@@ -1,0 +1,7 @@
+[
+  {
+    "transcript": "train/samples/en_us/sample1/transcript.txt",
+    "audio": "train/samples/en_us/sample1/audio.mp3",
+    "language": "en_us"
+  }
+]

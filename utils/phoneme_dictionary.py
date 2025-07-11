@@ -22,6 +22,13 @@ class PhonemeDictionary:
                         max(p["index"] for p in self.phonemes.values()) + 1
                     )
 
+    def get_num_phonemes(self) -> int:
+        """
+        Returns the number of phonemes in the dictionary.
+        Includes padding (index 0), so this is safe to use for nn.Embedding.
+        """
+        return self.next_index  # Index is always next available, so total count
+
     def save(self):
         data = {
             "phonemes": self.phonemes,
@@ -36,14 +43,7 @@ class PhonemeDictionary:
         print(f"💾 Saved phoneme dictionary to {self.vocab_path}")
 
     def encode_text(self, text: str) -> list[int]:
-        phoneme_seq = phonemize(
-            text,
-            language=self.lang,
-            backend="espeak",
-            strip=True,
-            preserve_punctuation=True,
-        )
-        phoneme_seq = cast(str, phoneme_seq)
+        phoneme_seq = self.get_phoneme_seq(text)
         return [
             self.phonemes[p]["index"] for p in phoneme_seq.split() if p in self.phonemes
         ]
@@ -64,14 +64,7 @@ class PhonemeDictionary:
             text = f.read().strip()
 
         # Generate phonemes using phonemizer
-        phoneme_seq = phonemize(
-            text,
-            language=self.lang,
-            backend="espeak",
-            strip=True,
-            preserve_punctuation=True,
-        )
-        phoneme_seq = cast(str, phoneme_seq)  # Ensure it's a string
+        phoneme_seq = self.get_phoneme_seq(text)
         # phoneme_seq is a string of phonemes separated by spaces, e.g. "h ə l oʊ"
 
         for phoneme in phoneme_seq.split():

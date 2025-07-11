@@ -25,8 +25,12 @@ class ETTSModel(nn.Module):
         hidden_dim: int = 512,
         mel_dim: int = 80,
         num_layers: int = 2,
+        upsample_factor: int = 16,
+        target_mel_length: int = 1024,
     ):
         super().__init__()
+
+        self.target_mel_length = target_mel_length
 
         # Learnable phoneme embedding table
         self.phoneme_embedding = nn.Embedding(num_phonemes, phoneme_embedding_dim)
@@ -51,6 +55,9 @@ class ETTSModel(nn.Module):
             nn.ReLU(),
             nn.Linear(hidden_dim, mel_dim),
         )
+
+        # Upsampling layer to match target mel length
+        self.upsample = nn.Upsample(scale_factor=upsample_factor, mode="nearest")
 
     def forward(self, phoneme_ids: torch.Tensor, speaker_embeddings: torch.Tensor):
         """
@@ -79,4 +86,18 @@ class ETTSModel(nn.Module):
         # Project to mel spectrogram
         mel = self.mel_projection(encoded)  # (B, T, mel_dim)
 
-        return mel.transpose(1, 2)  # (B, mel_dim, T)
+        # Transpose for upsampling: (B, mel_dim, T)
+        mel = mel.transpose(1, 2)
+
+        # Upsample in time to reach ~target mel length
+        mel = self.upsample(mel)  # (B, mel_dim, T_upsampled)
+
+        # Trim or pad to exact length
+        current_len = mel.shape[2]
+        if current_len > self.target_mel_length:
+            mel = mel[:, :, : self.target_mel_length]
+        elif current_len < self.target_mel_length:
+            pad_amount = self.target_mel_length - current_len
+            mel = nn.functional.pad(mel, (0, pad_amount), mode="constant", value=0.0)
+
+        return mel
