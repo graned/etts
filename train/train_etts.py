@@ -2,10 +2,13 @@ import torch
 import os
 import sys
 import matplotlib.pyplot as plt
+import torchvision.utils as vutils
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from torch import nn, optim
+from torch.utils.tensorboard import SummaryWriter
+
 from models.etts_model import ETTSModel
 from data.etts_dataloader import ETTSDataloader
 from utils.phoneme_dictionary import PhonemeDictionary
@@ -22,6 +25,7 @@ os.makedirs(CHECKPOINT_DIR, exist_ok=True)
 
 
 def train():
+    writer = SummaryWriter(log_dir="runs/etts_experiment")  # TensorBoard writer
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Build Manifest
@@ -65,7 +69,7 @@ def train():
     # Loss function and optimizer
     criterion = nn.MSELoss()  # for mel spectrogram regression
     optimizer = optim.Adam(model.parameters(), lr=1e-4)
-    epochs = 5
+    epochs = 50
     best_loss = float("inf")
 
     for epoch in range(epochs):
@@ -89,13 +93,25 @@ def train():
             outputs = model(phonemes, speaker_emb)
             loss = criterion(outputs, mels)
             loss.backward()
+
+            for name, param in model.named_parameters():
+                if param.grad is not None:
+                    writer.add_histogram(
+                        f"GradientsHist/{name}", param.grad.norm(), batch_idx
+                    )
+
             optimizer.step()
+
+            for group in optimizer.param_groups:
+                writer.add_scalar("Learning Rate", group["lr"], batch_idx)
 
             total_loss += loss.item()
 
+            writer.add_scalar("Loss/train", loss.item(), batch_idx)
             # Log every few steps
             if batch_idx % 10 == 0:
-                print(f"Epoch {epoch} Batch {batch_idx} Loss: {loss.item():.4f}")
+                visualize_mel(writer, mels[0], batch_idx, "Mel/Target")
+                visualize_mel(writer, outputs[0], batch_idx, "Mel/Generated")
 
         avg_loss = total_loss / len(dataloader)
         print(f"📉 Average Loss: {avg_loss:.6f}")
@@ -111,23 +127,14 @@ def train():
             torch.save(
                 model.state_dict(), os.path.join(CHECKPOINT_DIR, "best_model.pth")
             )
-
-        # 📊 Visualize spectrogram (just for first sample)
-        if epoch == epochs - 1:
-            if outputs is not None:
-                visualize_mel(mels[0].detach().cpu(), outputs[0].detach().cpu(), epoch)
+    writer.close()
 
 
-def visualize_mel(target_mel, predicted_mel, epoch):
-    fig, axs = plt.subplots(2, 1, figsize=(10, 6))
-    axs[0].imshow(target_mel, aspect="auto", origin="lower")
-    axs[0].set_title("🎯 Target Mel Spectrogram")
-    axs[1].imshow(predicted_mel, aspect="auto", origin="lower")
-    axs[1].set_title("🔮 Predicted Mel Spectrogram")
-
-    plt.tight_layout()
-    plt.savefig(f"train/mel_visual_epoch{epoch + 1}.png")
-    print(f"📸 Saved mel spectrogram visualization for epoch {epoch + 1}")
+def visualize_mel(writer, mel_tensor, step, tag="mel_spectrogram"):
+    mel = mel_tensor.clone().detach().cpu()
+    mel = (mel - mel.min()) / (mel.max() - mel.min() + 1e-5)  # Normalize to [0, 1]
+    mel = mel.unsqueeze(0)  # Add batch dimension
+    writer.add_image(tag, mel, global_step=step)
 
 
 if __name__ == "__main__":
