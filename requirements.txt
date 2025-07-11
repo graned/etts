@@ -8,4 +8,5 @@ tqdm==4.66.4
 resemblyzer
 setuptools<81
 tensorboard
+matplotlib
 
