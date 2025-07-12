@@ -1,32 +1,20 @@
 {
   "phonemes": {
-    "ðɪs": {
+    "h": {
       "index": 1,
-      "symbol": "ðɪs"
+      "symbol": "h"
     },
-    "ɪz": {
+    "ə": {
       "index": 2,
-      "symbol": "ɪz"
+      "symbol": "ə"
     },
-    "dʒʌst": {
+    "l": {
       "index": 3,
-      "symbol": "dʒʌst"
+      "symbol": "l"
     },
-    "ɐ": {
+    "oʊ": {
       "index": 4,
-      "symbol": "ɐ"
-    },
-    "dʌmi": {
-      "index": 5,
-      "symbol": "dʌmi"
-    },
-    "tɹænskɹɪpt": {
-      "index": 6,
-      "symbol": "tɹænskɹɪpt"
-    },
-    "faɪl": {
-      "index": 7,
-      "symbol": "faɪl"
+      "symbol": "oʊ"
     }
   },
   "metadata": {

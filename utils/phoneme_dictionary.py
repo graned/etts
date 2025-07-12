@@ -1,6 +1,8 @@
 import json
 import os
+from re import split
 from phonemizer import phonemize
+from phonemizer.separator import Separator
 from typing import cast
 
 
@@ -54,9 +56,12 @@ class PhonemeDictionary:
             language=self.lang,
             backend="espeak",
             strip=True,
-            preserve_punctuation=True,
+            preserve_punctuation=False,
+            separator=Separator(phone="|", word=" "),
         )
-        return cast(str, phoneme_seq)
+        # replace '|' with space and strip whitespace
+        phoneme_seq = cast(str, phoneme_seq)
+        return phoneme_seq.replace("|", " ").strip()
 
     def load_from_manifest(self, manifest_path: str):
         """
