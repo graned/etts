@@ -32,21 +32,21 @@ class ManifestBuilder:
     """
 
     def build(self, deduplicate: bool = True) -> List[Dict]:
-        print(f"📂 Building manifest from root directory: {self.root_dir}...")
+        #        print(f"📂 Building manifest from root directory: {self.root_dir}...")
 
         self.entries = []
         seen_hashes = set()
 
         for lang_folder in os.listdir(self.root_dir):
             lang_path = os.path.join(self.root_dir, lang_folder)
-            print(f"🔍 Scanning language folder: {lang_path}")
+            #            print(f"🔍 Scanning language folder: {lang_path}")
             if not os.path.isdir(lang_path):
                 continue
 
             for sample_folder in os.listdir(lang_path):
-                print(f"🔍 Scanning sample folder: {sample_folder}")
+                #               print(f"🔍 Scanning sample folder: {sample_folder}")
                 sample_path = os.path.join(lang_path, sample_folder)
-                print(f"📂 Processing sample: {sample_path}")
+                #               print(f"📂 Processing sample: {sample_path}")
                 if not os.path.isdir(sample_path):
                     continue
 
@@ -85,7 +85,7 @@ class ManifestBuilder:
 
                 self.entries.append(entry)
 
-        print(f"✅ Built manifest with {len(self.entries)} samples")
+        #        print(f"✅ Built manifest with {len(self.entries)} samples")
         return self.entries
 
     def save(self, path: str = "data/manifest.json"):
@@ -96,7 +96,8 @@ class ManifestBuilder:
 
         with open(path, "w", encoding="utf-8") as f:
             json.dump(self.entries, f, ensure_ascii=False, indent=2)
-        print(f"💾 Manifest saved to {path}")
+
+    #        print(f"💾 Manifest saved to {path}")
 
     def load(self, path: str) -> List[Dict]:
         with open(path, "r", encoding="utf-8") as f:

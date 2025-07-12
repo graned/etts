@@ -24,18 +24,29 @@ SAMPLES_PATH = "train/samples"
 os.makedirs(CHECKPOINT_DIR, exist_ok=True)
 
 
+def setup():
+    # Step 1: Build Manifest
+    print("🔍 Building manifest...")
+    samples_path = SAMPLES_PATH
+    manifest_builder = ManifestBuilder(samples_path)
+    manifest_builder.build()
+    manifest_path = MANIFEST_PATH
+    manifest_builder.save(manifest_path)
+    print(f"🔍 Manifest saved to {manifest_path}")
+
+    # 🧠 Step 2: Load Phoneme Dictionary from manifest
+    print("📖 Indexing phoneme dictionary...")
+    phoneme_dict = PhonemeDictionary(lang="en-us", vocab_path=PHONEME_DICT_PATH)
+    phoneme_dict.load_from_manifest(manifest_path)
+    print(
+        f"📖 Phoneme dictionary loaded with {phoneme_dict.get_num_phonemes()} phonemes."
+    )
+
+
 def train():
     writer = SummaryWriter(log_dir="runs/etts_experiment")  # TensorBoard writer
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # Build Manifest
-    samples_path = "train/samples"
-    manifest_builder = ManifestBuilder(samples_path)
-    manifest_builder.build()
-    manifest_path = "train/manifests/etts_manifest.json"
-    manifest_builder.save(manifest_path)
-
-    # 🧠 Load phoneme dictionary
     phoneme_dict = PhonemeDictionary(lang="en-us", vocab_path=PHONEME_DICT_PATH)
 
     # Initialize utilities
@@ -47,11 +58,11 @@ def train():
         phoneme_dict=phoneme_dict,
         embedding_extractor=embedding_extractor,
         mel_extractor=mel_extractor,
-        batch_size=8,
+        batch_size=16,
         shuffle=True,
         num_workers=0,  # Use 0 for simpler debugging
     )
-    dataloader = dataloader_builder.load(manifest_path)
+    dataloader = dataloader_builder.load(MANIFEST_PATH)
 
     # Get one batch to estimate upsample factor
     phonemes, phoneme_lengths, speaker_embs, mels, mel_lengths = next(iter(dataloader))
@@ -68,8 +79,8 @@ def train():
     )
     # Loss function and optimizer
     criterion = nn.MSELoss()  # for mel spectrogram regression
-    optimizer = optim.Adam(model.parameters(), lr=1e-4)
-    epochs = 50
+    optimizer = optim.Adam(model.parameters(), lr=1e-3)
+    epochs = 100
     best_loss = float("inf")
 
     for epoch in range(epochs):
@@ -138,4 +149,5 @@ def visualize_mel(writer, mel_tensor, step, tag="mel_spectrogram"):
 
 
 if __name__ == "__main__":
+    #    setup()
     train()

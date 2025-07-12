@@ -27,7 +27,7 @@ class PhonemeDictionary:
         Returns the number of phonemes in the dictionary.
         Includes padding (index 0), so this is safe to use for nn.Embedding.
         """
-        return self.next_index  # Index is always next available, so total count
+        return max(p["index"] for p in self.phonemes.values()) + 1
 
     def save(self):
         data = {
@@ -35,12 +35,12 @@ class PhonemeDictionary:
             "metadata": {
                 "language": self.lang,
                 "note": "Phoneme dictionary with numeric indices and reference mel placeholders",
-                # "phoneme_coverage_percent": self.coverage(),
             },
         }
         with open(self.vocab_path, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
-        print(f"💾 Saved phoneme dictionary to {self.vocab_path}")
+
+    #        print(f"💾 Saved phoneme dictionary to {self.vocab_path}")
 
     def encode_text(self, text: str) -> list[int]:
         phoneme_seq = self.get_phoneme_seq(text)
@@ -58,6 +58,29 @@ class PhonemeDictionary:
         )
         return cast(str, phoneme_seq)
 
+    def load_from_manifest(self, manifest_path: str):
+        """
+        Load phonemes from a manifest file.
+        The manifest should be a JSON list of {transcript, audio_path, language}.
+        """
+        with open(manifest_path, "r", encoding="utf-8") as f:
+            entries = json.load(f)
+
+        for entry in entries:
+            transcript_path = entry["transcript"]
+            self.add_from_transcript(transcript_path)
+            # save on next_index modulo 500
+            if self.next_index % 500 == 0:
+                chk = {
+                    "last_indexed": entry,
+                }
+                with open(
+                    "train/dictionaries/checkpoint_charly.json", "w", encoding="utf-8"
+                ) as f:
+                    json.dump(chk, f, ensure_ascii=False, indent=2)
+                print(f"💾 dictionary checkpoint saved {self.next_index}")
+                self.save()
+
     def add_from_transcript(self, transcript_path: str):
         # Read transcript text
         with open(transcript_path, "r", encoding="utf-8") as f:
@@ -73,8 +96,8 @@ class PhonemeDictionary:
                     "index": self.next_index,
                     "symbol": phoneme,
                 }
-                print(f"➕ Added new phoneme '{phoneme}' with index {self.next_index}")
                 self.next_index += 1
+            #                print(f"➕ Added new phoneme '{phoneme}' with index {self.next_index}")
             else:
                 # phoneme already exists, skip
                 pass

@@ -49,9 +49,6 @@ class ETTSDataset(Dataset):
         # Read transcript text from file
         transcript_text = self._load_transcript(transcript_path)
 
-        # Update phoneme dictionary with new transcript
-        self.phoneme_dict.add_from_transcript(transcript_path)
-
         # Conver transcript text to phoneme sequence string
         phoneme_seq = self.phoneme_dict.get_phoneme_seq(transcript_text)
         phoneme_ids = [
@@ -60,7 +57,6 @@ class ETTSDataset(Dataset):
             if ph in self.phoneme_dict.phonemes
         ]
         phoneme_ids = phoneme_ids[: self.max_phonemes]  # Truncate if too long
-        self.phoneme_dict.save()  # Save updated phoneme dictionary
 
         # -- Speaker embedding extraction --
         speaker_embedding = self.embedding_extractor.get_embedding(audio_path)

@@ -1,2 +1,5 @@
 *.pyc
 .echora
+train/samples
+train/dictonary
+train/manifests
