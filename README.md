@@ -7,25 +7,49 @@ It is designed to support multilingual, multi-speaker voice synthesis — includ
 
 ## Project Structure
 
-NOTE: changed
-
 ```
-etts/
-├── etts/                    ← Python package
-│   ├── __init__.py
-│   ├── model.py             ← Your PyTorch model definition
-│   ├── train.py             ← Training loop
-│   ├── dataset.py           ← Custom dataset loader
-│   ├── utils.py             ← Helpers (phonemizer, spectrograms, etc.)
-│
-├── scripts/                 ← Optional tools for audio/text preprocessing
-│   └── create_dummy_data.py
-│
-├── checkpoints/             ← Saved model weights
-│
-├── requirements.txt
+etts
+├── data
+│   ├── etts_dataloader.py
+│   └── etts_dataset.py
+│  
+├── models
+│   └── etts_model.py
+├── pyrightconfig.json
 ├── README.md
-└── main.py                  ← CLI entrypoint (e.g., `python main.py --infer "Hello"`)
+├── requirements.txt
+├── test
+│   ├── dummy_dictionaries
+│   │   └── phoneme_dict.json
+│   ├── dummy_samples
+│   ├── embedding_extractor.test.py
+│   ├── etts_dataloader.test.py
+│   ├── etts_dataset.test.py
+│   ├── etts_model.test.py
+│   ├── manifest_builder.test.py
+│   ├── mel_extractor.test.py
+│   ├── outputs
+│   │   └── dummy_manifest.json
+│   └── phoneme_dictionary.test.py
+├── train
+│   ├── checkpoints
+│   ├── dictionaries
+│   │   └── phoneme_dict.json
+│   ├── manifests
+│   │   └── etts_manifest.json
+│   ├── samples
+│   │   └── en_us
+│   │       └── sample1
+│   │           ├── audio.mp3
+│   │           └── transcript.txt
+│   └── train_etts.py
+└── utils
+    ├── embedding_extractor.py
+    ├── manifest_builder.py
+    ├── mel_extractor.py
+    └── phoneme_dictionary.py
+
+
 ```
 
 ---

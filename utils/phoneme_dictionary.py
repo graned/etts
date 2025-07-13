@@ -74,17 +74,6 @@ class PhonemeDictionary:
         for entry in entries:
             transcript_path = entry["transcript"]
             self.add_from_transcript(transcript_path)
-            # save on next_index modulo 500
-            if self.next_index % 500 == 0:
-                chk = {
-                    "last_indexed": entry,
-                }
-                with open(
-                    "train/dictionaries/checkpoint_charly.json", "w", encoding="utf-8"
-                ) as f:
-                    json.dump(chk, f, ensure_ascii=False, indent=2)
-                print(f"💾 dictionary checkpoint saved {self.next_index}")
-                self.save()
 
     def add_from_transcript(self, transcript_path: str):
         # Read transcript text
@@ -102,7 +91,8 @@ class PhonemeDictionary:
                     "symbol": phoneme,
                 }
                 self.next_index += 1
-            #                print(f"➕ Added new phoneme '{phoneme}' with index {self.next_index}")
+                print(f"➕ Added new phoneme '{phoneme}' with index {self.next_index}")
+                self.save()
             else:
                 # phoneme already exists, skip
                 pass

@@ -4,6 +4,9 @@ import sys
 import matplotlib.pyplot as plt
 import torchvision.utils as vutils
 
+# Change TMP file location
+os.environ["TMPDIR"] = "/data/projects/echora/etts/tmp"
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from torch import nn, optim
@@ -77,6 +80,7 @@ def train():
     model = ETTSModel(
         num_phonemes=phoneme_dict.get_num_phonemes(), upsample_factor=upsample_factor
     )
+    model.to(device)
     # Loss function and optimizer
     criterion = nn.MSELoss()  # for mel spectrogram regression
     optimizer = optim.Adam(model.parameters(), lr=1e-3)
@@ -96,12 +100,12 @@ def train():
             mels,
             mel_lengths,
         ) in enumerate(dataloader):
-            # phonemes = phonemes.to(device)
-            speaker_emb = speaker_embs.to(device)
-            # mels = mels.to(device)
+            phonemes = phonemes.to(device)
+            speaker_embs = speaker_embs.to(device)
+            mels = mels.to(device)
 
             optimizer.zero_grad()
-            outputs = model(phonemes, speaker_emb)
+            outputs = model(phonemes, speaker_embs)
             loss = criterion(outputs, mels)
             loss.backward()
 
@@ -149,5 +153,5 @@ def visualize_mel(writer, mel_tensor, step, tag="mel_spectrogram"):
 
 
 if __name__ == "__main__":
-    #    setup()
-    train()
+    setup()
+    # train()
