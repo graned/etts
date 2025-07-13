@@ -1,11 +1,6 @@
 import torch
 import os
 import sys
-import matplotlib.pyplot as plt
-import torchvision.utils as vutils
-
-# Change TMP file location
-os.environ["TMPDIR"] = "/data/projects/echora/etts/tmp"
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -20,26 +15,36 @@ from utils.mel_extractor import MelExtractor
 from utils.manifest_builder import ManifestBuilder
 
 # 📦 Load components
-PHONEME_DICT_PATH = "train/dictionaries/phoneme_dict.json"
-MANIFEST_PATH = "train/manifests/etts_manifest.json"
-CHECKPOINT_DIR = "train/checkpoints"
-SAMPLES_PATH = "train/samples"
-os.makedirs(CHECKPOINT_DIR, exist_ok=True)
+dict_path = os.getenv("PHONEME_DICT_PATH", "train/dictionaries/phoneme_dict.json")
+manifest_path = os.getenv("MANIFEST_PATH", "train/manifests/etts_manifest.json")
+ckpt_dir = os.getenv("CHECKPOINT_DIR", "train/checkpoints")
+samples_path = os.getenv("SAMPLES_PATH", "train/samples")
+t_epochs = int(os.getenv("TRAIN_EPOCHS", 100))
+t_lr = float(os.getenv("TRAIN_LR", 1e-3))
+p_steps = int(os.getenv("TRAIN_PHONEME_STEPS", 1))
+p_mels = int(os.getenv("TRAIN_PHONEME_MELS", 2))
+t_lang = os.getenv("TRAIN_LANGUAGE", "en-us")
+t_setup_only = os.getenv("TRAIN_SETUP_ONLY", "false").lower() == "true"
+t_train_only = os.getenv("TRAIN_ONLY", "false").lower() == "true"
+t_tmp_dir = os.getenv("TMPDIR", "tmp")
+
+os.makedirs(ckpt_dir, exist_ok=True)
+os.makedirs(t_tmp_dir, exist_ok=True)
+
+os.environ["TMPDIR"] = t_tmp_dir
+phoneme_dict = PhonemeDictionary(lang=t_lang, vocab_path=dict_path)
 
 
 def setup():
     # Step 1: Build Manifest
     print("🔍 Building manifest...")
-    samples_path = SAMPLES_PATH
     manifest_builder = ManifestBuilder(samples_path)
     manifest_builder.build()
-    manifest_path = MANIFEST_PATH
     manifest_builder.save(manifest_path)
     print(f"🔍 Manifest saved to {manifest_path}")
 
     # 🧠 Step 2: Load Phoneme Dictionary from manifest
     print("📖 Indexing phoneme dictionary...")
-    phoneme_dict = PhonemeDictionary(lang="en-us", vocab_path=PHONEME_DICT_PATH)
     phoneme_dict.load_from_manifest(manifest_path)
     print(
         f"📖 Phoneme dictionary loaded with {phoneme_dict.get_num_phonemes()} phonemes."
@@ -49,8 +54,6 @@ def setup():
 def train():
     writer = SummaryWriter(log_dir="runs/etts_experiment")  # TensorBoard writer
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-    phoneme_dict = PhonemeDictionary(lang="en-us", vocab_path=PHONEME_DICT_PATH)
 
     # Initialize utilities
     embedding_extractor = EmbeddingExtractor()
@@ -65,13 +68,13 @@ def train():
         shuffle=True,
         num_workers=0,  # Use 0 for simpler debugging
     )
-    dataloader = dataloader_builder.load(MANIFEST_PATH)
+    dataloader = dataloader_builder.load(manifest_path)
 
     # Get one batch to estimate upsample factor
     phonemes, phoneme_lengths, speaker_embs, mels, mel_lengths = next(iter(dataloader))
 
-    avg_phoneme_len = phonemes.shape[1]  # number of phoneme steps
-    avg_mel_len = mels.shape[2]  # number of mel time steps
+    avg_phoneme_len = phonemes.shape[p_steps]  # number of phoneme steps
+    avg_mel_len = mels.shape[p_mels]  # number of mel time steps
 
     upsample_factor = round(avg_mel_len / avg_phoneme_len)
     print(f"Estimated upsample factor: {upsample_factor}")
@@ -83,12 +86,11 @@ def train():
     model.to(device)
     # Loss function and optimizer
     criterion = nn.MSELoss()  # for mel spectrogram regression
-    optimizer = optim.Adam(model.parameters(), lr=1e-3)
-    epochs = 100
+    optimizer = optim.Adam(model.parameters(), lr=t_lr)
     best_loss = float("inf")
 
-    for epoch in range(epochs):
-        print(f"\n🌱 Epoch {epoch + 1}/{epochs}")
+    for epoch in range(t_epochs):
+        print(f"\n🌱 Epoch {epoch + 1}/{t_epochs}")
         model.train()
         total_loss = 0.0
 
@@ -132,16 +134,14 @@ def train():
         print(f"📉 Average Loss: {avg_loss:.6f}")
 
         # 💾 Save checkpoint
-        model_path = os.path.join(CHECKPOINT_DIR, f"etts_epoch_{epoch + 1}.pth")
+        model_path = os.path.join(ckpt_dir, f"etts_epoch_{epoch + 1}.pth")
         torch.save(model.state_dict(), model_path)
         print(f"✅ Saved checkpoint: {model_path}")
 
         # 🧪 Optional: save best model
         if avg_loss < best_loss:
             best_loss = avg_loss
-            torch.save(
-                model.state_dict(), os.path.join(CHECKPOINT_DIR, "best_model.pth")
-            )
+            torch.save(model.state_dict(), os.path.join(ckpt_dir, "best_model.pth"))
     writer.close()
 
 
@@ -153,5 +153,26 @@ def visualize_mel(writer, mel_tensor, step, tag="mel_spectrogram"):
 
 
 if __name__ == "__main__":
-    setup()
-    # train()
+    if t_setup_only:
+        print("🔧 Setup mode: building manifest and indexing phoneme dictionary...")
+        setup()
+        print("✅ Setup complete.")
+        sys.exit(0)
+    if t_train_only:
+        print("🚀 Training mode: starting training...")
+        if not os.path.exists(manifest_path):
+            print(
+                f"❗ Manifest file not found at {manifest_path}. Please run setup first."
+            )
+            sys.exit(1)
+    if not os.path.exists(dict_path):
+        print(
+            f"❗ Phoneme dictionary not found at {dict_path}. Please run setup first."
+        )
+        sys.exit(1)
+    if not os.path.exists(samples_path):
+        print(f"❗ Samples directory not found at {samples_path}")
+        sys.exit(1)
+    if not os.path.exists(ckpt_dir):
+        print(f"❗ Checkpoint directory not found at {ckpt_dir}. Creating it.")
+        os.makedirs(ckpt_dir)

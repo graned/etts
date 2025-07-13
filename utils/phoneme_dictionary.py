@@ -1,6 +1,5 @@
 import json
 import os
-from re import split
 from phonemizer import phonemize
 from phonemizer.separator import Separator
 from typing import cast
@@ -41,8 +40,6 @@ class PhonemeDictionary:
         }
         with open(self.vocab_path, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
-
-    #        print(f"💾 Saved phoneme dictionary to {self.vocab_path}")
 
     def encode_text(self, text: str) -> list[int]:
         phoneme_seq = self.get_phoneme_seq(text)
